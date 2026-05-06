@@ -2,45 +2,33 @@ import { useState } from "react";
 
 function App() {
   const [link, setLink] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const getLink = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/get-link");
-      const data = await response.json();
+    setLoading(true);
 
-      if (data.success) {
-        setLink(data.url);
-        setMessage("");
-      } else {
-        setMessage(data.message);
-        setLink("");
-      }
-    } catch (error) {
-      setMessage("Khong ket noi duoc backend");
-    }
+    setTimeout(async () => {
+      const res = await fetch("http://localhost:3000/api/links/get-link");
+      const data = await res.json();
+
+      if (data.success) setLink(data.url);
+      else alert(data.message);
+
+      setLoading(false);
+    }, 3000);
   };
 
   return (
-    <div style={{ padding: "40px", fontFamily: "Arial" }}>
-      <h1>Link Generator</h1>
+    <div className="container">
+      <h2>Lay link Netflix</h2>
 
-      <button onClick={getLink}>Lay Link</button>
+      <div className="box">
+        {link && <p>{link}</p>}
+      </div>
 
-      {link && (
-        <div style={{ marginTop: "20px" }}>
-          <p>Link cua ban:</p>
-          <a href={link} target="_blank">
-            {link}
-          </a>
-        </div>
-      )}
-
-      {message && (
-        <p style={{ color: "red", marginTop: "20px" }}>
-          {message}
-        </p>
-      )}
+      <button onClick={getLink} disabled={loading}>
+        {loading ? "Dang tai..." : "Lay link"}
+      </button>
     </div>
   );
 }
