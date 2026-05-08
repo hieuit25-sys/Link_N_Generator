@@ -1,13 +1,31 @@
 const express = require("express");
+
 const router = express.Router();
-const ctrl = require("../controllers/linkController");
-const auth = require("../middleware/authMiddleware");
-const rateLimit = require("../middleware/rateLimit");
 
-router.get("/get-link", rateLimit, ctrl.getLink);
+const linkController = require("../controllers/linkController");
 
-router.post("/add", auth, ctrl.addLink);
-router.get("/all", auth, ctrl.getAllLinks);
-router.delete("/:id", auth, ctrl.deleteLink);
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.get(
+  "/get-link",
+  linkController.getLink
+);
+
+router.get(
+  "/all",
+  authMiddleware,
+  linkController.getAllLinks
+);
+
+router.post(
+  "/add",
+  linkController.addLink
+);
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  linkController.deleteLink
+);
 
 module.exports = router;
