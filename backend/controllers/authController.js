@@ -5,7 +5,7 @@ exports.login = async (req, res) => {
 
   if (
     username === "admin" &&
-    password === "thanhhieu"
+    password === " "
   ) {
     const token = jwt.sign(
       {

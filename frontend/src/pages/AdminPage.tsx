@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 interface Link {
   _id: string;
@@ -12,51 +11,88 @@ function AdminPage() {
   const [links, setLinks] = useState<Link[]>([]);
   const [url, setUrl] = useState("");
 
+  const navigate = useNavigate();
+
   const token = localStorage.getItem("token");
 
+  // Lay danh sach links
   const fetchLinks = async () => {
-    const res = await fetch("http://localhost:3000/api/links/all", {
-      headers: {
-        Authorization: token || ""
-      }
-    });
-    const data = await res.json();
-    setLinks(data);
+    try {
+      const res = await fetch(
+        "http://localhost:3000/api/links/all",
+        {
+          headers: {
+            Authorization: token || ""
+          }
+        }
+      );
+
+      const data = await res.json();
+
+      setLinks(data);
+    } catch (error) {
+      console.log("Loi fetch links:", error);
+    }
   };
 
+  // Them link
   const addLink = async () => {
-    await fetch("http://localhost:3000/api/links/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token || ""
-      },
-      body: JSON.stringify({ url })
-    });
+    if (!url) return;
 
-    setUrl("");
-    fetchLinks();
+    try {
+      await fetch(
+        "http://localhost:3000/api/links/add",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token || ""
+          },
+
+          body: JSON.stringify({
+            url
+          })
+        }
+      );
+
+      setUrl("");
+
+      fetchLinks();
+    } catch (error) {
+      console.log("Loi them link:", error);
+    }
   };
 
+  // Xoa link
   const deleteLink = async (id: string) => {
-    await fetch(`http://localhost:3000/api/links/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: token || ""
-      }
-    });
+    try {
+      await fetch(
+        `http://localhost:3000/api/links/${id}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            Authorization: token || ""
+          }
+        }
+      );
+
+      fetchLinks();
+    } catch (error) {
+      console.log("Loi xoa link:", error);
+    }
+  };
+
+  // Kiem tra login + load data
+  useEffect(() => {
+    // if (!token) {
+    //   navigate("/admin/login");
+    //   return;
+    // }
 
     fetchLinks();
-  };
-  
-    const navigate = useNavigate();
-
-  useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    navigate("/admin/login");
-  }
-  }, []);
+  }, [navigate]);
 
   return (
     <div>
@@ -68,9 +104,12 @@ function AdminPage() {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
       />
-      <button onClick={addLink}>Them</button>
 
-      <table>
+      <button onClick={addLink}>
+        Them
+      </button>
+
+      <table border={1}>
         <thead>
           <tr>
             <th>URL</th>
@@ -83,9 +122,17 @@ function AdminPage() {
           {links.map((link) => (
             <tr key={link._id}>
               <td>{link.url}</td>
+
               <td>{link.clicks}</td>
+
               <td>
-                <button onClick={() => deleteLink(link._id)}>Xoa</button>
+                <button
+                  onClick={() =>
+                    deleteLink(link._id)
+                  }
+                >
+                  Xoa
+                </button>
               </td>
             </tr>
           ))}
